@@ -62,7 +62,7 @@ def reset_content():
         st.session_state.result = ""
 
 # =========================
-# PDF 생성 함수
+# PDF 분석 보고서 생성 함수
 # =========================
 
 def create_pdf(text):
@@ -117,6 +117,74 @@ def create_pdf(text):
 
     buffer.seek(0)
 
+    return buffer
+
+# =========================
+# 매뉴얼 PDF 생성 함수
+# =========================
+
+def create_manual_pdf():
+    buffer = BytesIO()
+    try:
+        pdfmetrics.registerFont(TTFont("Malgun", "malgun.ttf"))
+        font_name = "Malgun"
+    except:
+        font_name = "Helvetica"
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=45,
+        leftMargin=45,
+        topMargin=45,
+        bottomMargin=45
+    )
+
+    styles = getSampleStyleSheet()
+    styles["Title"].fontName = font_name
+    styles["Heading2"].fontName = font_name
+    styles["BodyText"].fontName = font_name
+    styles["BodyText"].leading = 16
+
+    story = []
+
+    # 제목
+    story.append(Paragraph("<b>AI 회의록 요약 시스템 사용자 매뉴얼</b>", styles["Title"]))
+    story.append(Spacer(1, 15))
+    story.append(Paragraph(f"작성일: {datetime.now().strftime('%Y-%m-%d')} | 시스템 버전: v1.0", styles["BodyText"]))
+    story.append(Spacer(1, 25))
+
+    # 섹션 1
+    story.append(Paragraph("<b>1. 시스템 개요</b>", styles["Heading2"]))
+    story.append(Spacer(1, 8))
+    story.append(Paragraph("본 시스템은 인공지능(AI)을 활용하여 복잡하고 긴 회의록 내용을 단 몇 초 만에 핵심 위주로 요약 및 분석해 주는 업무 효율화 플랫폼입니다. 보안성이 뛰어난 다크 모드 인터페이스와 유연한 파일 연동 기능을 제공합니다.", styles["BodyText"]))
+    story.append(Spacer(1, 18))
+
+    # 섹션 2
+    story.append(Paragraph("<b>2. 주요 기능 및 조작 방법</b>", styles["Heading2"]))
+    story.append(Spacer(1, 8))
+    story.append(Paragraph("• <b>회의록 파일 업로드</b>: 메인 화면 좌측의 업로드 영역에 텍스트 파일(.txt)을 드래그 앤 드롭하면 내용이 자동으로 입력창에 매핑됩니다.", styles["BodyText"]))
+    story.append(Paragraph("• <b>직접 텍스트 입력</b>: 파일이 없더라도 편집창에 직접 회의 내용을 타이핑하거나 복사하여 붙여넣을 수 있습니다.", styles["BodyText"]))
+    story.append(Paragraph("• <b>AI 분석 실행</b>: 우측의 'AI 분석 시작' 버튼을 누르면 실시간 프로그래스 바와 함께 핵심 요약, 결정 사항, 액션 아이템, 리스크 분석, 상사 보고 브리핑 등 5대 영역으로 정밀 분석이 수행됩니다.", styles["BodyText"]))
+    story.append(Paragraph("• <b>분석 히스토리 관리</b>: 좌측 사이드바를 통해 과거에 분석했던 기록이 시간별로 저장되며, 검색창을 통해 이전 회의록을 쉽게 찾아 다시 불러올 수 있습니다.", styles["BodyText"]))
+    story.append(Spacer(1, 18))
+
+    # 섹션 3 (업무 꿀팁)
+    story.append(Paragraph("<b>3. [필독] 실무 활용 및 1초 복사 꿀팁</b>", styles["Heading2"]))
+    story.append(Spacer(1, 8))
+    story.append(Paragraph("최신 웹 브라우저의 강력한 클립보드 보안 규제 및 격리 환경(iframe)으로 인해, 일반적인 마우스 클릭형 자동 복사 버튼은 작동이 차단되거나 레이아웃을 무너뜨릴 수 있습니다. 따라서 아래의 <b>가장 확실하고 빠른 대안</b>을 권장합니다.", styles["BodyText"]))
+    story.append(Paragraph("<b>방법 ① [강력 추천]:</b> 하단의 <b>'TXT 다운로드'</b> 버튼을 클릭하여 파일로 저장합니다. 파일을 열어 전체 선택(Ctrl+A) 후 복사(Ctrl+C)하면 메일이나 사내 메신저(슬랙, 카카오톡, 잔디 등)에 <b>줄바꿈과 서식이 100% 완벽하게 보존된 상태</b>로 바로 전달할 수 있습니다.", styles["BodyText"]))
+    story.append(Paragraph("<b>방법 ②:</b> 웹 화면에 출력된 '분석 결과' 본문 영역을 마우스로 드래그하거나 트리플 클릭(세 번 연속 클릭)하여 직접 복사합니다.", styles["BodyText"]))
+    story.append(Spacer(1, 18))
+
+    # 섹션 4
+    story.append(Paragraph("<b>4. 문제 해결 (FAQ)</b>", styles["Heading2"]))
+    story.append(Spacer(1, 8))
+    story.append(Paragraph("• <b>텍스트 파일 업로드 시 글자가 깨지는 경우</b>: 메모장 등에서 파일 저장 시 인코딩 형식이 'UTF-8'로 되어 있는지 확인해 주세요.", styles["BodyText"]))
+    story.append(Paragraph("• <b>분석 결과가 나오지 않거나 오류가 뜨는 경우</b>: 입력 내용이 너무 비어있지 않은지 확인하고, 사내 방화벽이나 네트워크 연결 상태를 점검 후 '입력 초기화'를 누르고 다시 실행해 주세요.", styles["BodyText"]))
+
+    doc.build(story)
+    buffer.seek(0)
     return buffer
 
 # =========================
@@ -253,6 +321,42 @@ header[data-testid="stHeader"] {
 }
 
 /* =========================
+   파일 업로더 디자인
+========================= */
+
+[data-testid="stFileUploader"] {
+    background: rgba(15, 23, 42, 0.45) !important;
+    backdrop-filter: blur(8px);
+    border: 1px dashed rgba(148, 163, 184, 0.25) !important;
+    border-radius: 20px !important;
+    padding: 10px !important;
+    margin-bottom: 15px !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-testid="stFileUploader"]:hover {
+    border-color: rgba(96, 165, 250, 0.7) !important;
+    background: rgba(15, 23, 42, 0.65) !important;
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.15) !important;
+}
+
+[data-testid="stFileUploader"] section {
+    padding: 15px !important;
+}
+
+[data-testid="stFileUploader"] group {
+    color: #cbd5e1 !important;
+}
+
+[data-testid="stFileUploader"] svg {
+    fill: #60a5fa !important;
+}
+
+[data-testid="stFileUploaderDropzone"] div div {
+    color: #94a3b8 !important;
+}
+
+/* =========================
    입력창
 ========================= */
 
@@ -371,7 +475,7 @@ header[data-testid="stHeader"] {
         8px 0 30px rgba(0,0,0,0.35);
 }
 
-/* 사이드바 내부 */
+/* 사이가이드 내부 */
 
 [data-testid="stSidebar"] > div:first-child {
     padding-top: 1rem;
@@ -603,11 +707,26 @@ with left:
 
     st.markdown("### 🖋️ 회의록 입력")
 
+    uploaded_file = st.file_uploader(
+        "회의록 파일 업로드 (.txt)",
+        type=["txt"],
+        disabled=st.session_state.processing,
+        label_visibility="collapsed"
+    )
+
+    if uploaded_file is not None:
+        try:
+            stringio = BytesIO(uploaded_file.getvalue())
+            file_text = stringio.read().decode("utf-8")
+            st.session_state["meeting_input"] = file_text
+        except Exception as file_err:
+            st.error(f"파일을 읽는 중 오류가 발생했습니다: {file_err}")
+
     meeting_text = st.text_area(
         "입력",
         height=380,
         label_visibility="collapsed",
-        placeholder="회의 내용을 입력하세요...",
+        placeholder="회의 내용을 입력하거나 위에 파일을 업로드하세요...",
         key="meeting_input",
         disabled=st.session_state.processing
     )
@@ -639,6 +758,17 @@ with right:
         on_click=reset_content,
         use_container_width=True,
         disabled=st.session_state.processing
+    )
+
+    # [위치 조정 완료] 이제 분석 전에도 언제든지 매뉴얼을 다운로드할 수 있도록 우측 가이드 컴포넌트 하단에 상시 배치
+    manual_pdf_data = create_manual_pdf()
+    st.write("")
+    st.download_button(
+        label="📘 시스템 사용자 매뉴얼 다운로드 (PDF)",
+        data=manual_pdf_data,
+        file_name="AI_회의록_요약시스템_사용자매뉴얼.pdf",
+        mime="application/pdf",
+        use_container_width=True
     )
 
 # =========================
@@ -699,8 +829,7 @@ if analyze:
 
             result_content = response.choices[0].message.content
 
-            result_content = result_content.replace("```markdown", "")
-            result_content = result_content.replace("```", "")
+            result_content = result_content.replace("```markdown", "").replace("```", "")
 
             progress_bar.progress(100)
 
@@ -741,8 +870,7 @@ if st.session_state.result:
 
     st.markdown("## 📊 분석 결과")
 
-    clean_result = st.session_state.result.replace("```markdown", "")
-    clean_result = clean_result.replace("```", "")
+    clean_result = st.session_state.result.replace("```markdown", "").replace("```", "")
 
     with st.container():
 
